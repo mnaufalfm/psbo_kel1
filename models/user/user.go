@@ -24,19 +24,19 @@ type Rekening struct {
 }
 
 type Pengguna struct {
-	Id         string     `json:"id" bson:"_id,omitempty"`
-	Username   string     `json:"username"`
-	Password   string     `json:"password"`
-	FotoProfil string     `json:"fotoprofil"` //simpan alamatnya saja
-	Nama       string     `json:"nama"`
-	IdDiri     string     `json:"iddiri"`
-	JenisID    int        `json:"jenisid"` //1=KTP, 2=SIM, 3=Paspor
-	TglLahir   string     `json:"tgllahir"`
-	Norek      []Rekening `json:"norek"`
-	Email      string     `json:"email"`
-	Gender     string     `json:"gender"`
-	NoHp       string     `json:"nohp"`
-	Alamat     string     `json:"alamat"`
+	Id         string     `json:"id,omitempty" bson:"_id,omitempty"`
+	Username   string     `json:"username,omitempty" bson:"username,omitempty"`
+	Password   string     `json:"password,omitempty" bson:"password,omitempty"`
+	FotoProfil string     `json:"fotoprofil,omitempty" bson:"fotoprofil,omitempty"` //simpan alamatnya saja
+	Nama       string     `json:"nama,omitempty" bson:"nama,omitempty"`
+	IdDiri     string     `json:"iddiri,omitempty" bson:"iddiri,omitempty"`
+	JenisID    int        `json:"jenisid,omitempty" bson:"jenisid,omitempty"` //1=KTP, 2=SIM, 3=Paspor
+	TglLahir   string     `json:"tgllahir,omitempty" bson:"tgllahir,omitempty"`
+	Norek      []Rekening `json:"norek,omitempty" bson:"norek,omitempty"`
+	Email      string     `json:"email,omitempty" bson:"email,omitempty"`
+	Gender     string     `json:"gender,omitempty" bson:"gender,omitempty"`
+	NoHp       string     `json:"nohp,omitempty" bson:"nohp,omitempty"`
+	Alamat     string     `json:"alamat,omitempty" bson:"alamat,omitempty"`
 }
 
 func ErrorReturn(w http.ResponseWriter, pesan string, code int) string {

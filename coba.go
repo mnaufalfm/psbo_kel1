@@ -3,11 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 
 	"net/http"
 
 	mgo "gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 /*type Rekening struct {
@@ -39,19 +39,19 @@ type Rekening struct {
 }
 
 type Pengguna struct {
-	Id         bson.ObjectId `json:"id" bson:"_id,omitempty"`
-	Username   string        `json:"username,omitempty"`
-	Password   string        `json:"password,omitempty"`
-	FotoProfil string        `json:"fotoprofil,omitempty"` //simpan alamatnya saja
-	Nama       string        `json:"nama,omitempty" bson:"nama,omitempty"`
-	IdDiri     string        `json:"iddiri,omitempty"`
-	JenisID    int           `json:"jenisid,omitempty"` //1=KTP, 2=SIM, 3=Paspor
-	TglLahir   string        `json:"tgllahir,omitempty"`
-	Norek      []Rekening    `json:"norek,omitempty"`
-	Email      string        `json:"email,omitempty"`
-	Gender     string        `json:"gender,omitempty"`
-	NoHp       string        `json:"nohp,omitempty"`
-	Alamat     string        `json:"alamat,omitempty"`
+	Id         string     `json:"id,omitempty" bson:"_id,omitempty"`
+	Username   string     `json:"username,omitempty" bson:"username,omitempty"`
+	Password   string     `json:"password,omitempty" bson:"password,omitempty"`
+	FotoProfil string     `json:"fotoprofil,omitempty" bson:"fotoprofil,omitempty"` //simpan alamatnya saja
+	Nama       string     `json:"nama,omitempty" bson:"nama,omitempty"`
+	IdDiri     string     `json:"iddiri,omitempty" bson:"iddiri,omitempty"`
+	JenisID    int        `json:"jenisid,omitempty" bson:"jenisid,omitempty"` //1=KTP, 2=SIM, 3=Paspor
+	TglLahir   string     `json:"tgllahir,omitempty" bson:"tgllahir,omitempty"`
+	Norek      []Rekening `json:"norek,omitempty" bson:"norek,omitempty"`
+	Email      string     `json:"email,omitempty" bson:"email,omitempty"`
+	Gender     string     `json:"gender,omitempty" bson:"gender,omitempty"`
+	NoHp       string     `json:"nohp,omitempty" bson:"nohp,omitempty"`
+	Alamat     string     `json:"alamat,omitempty" bson:"alamat,omitempty"`
 }
 
 /*type Biasa struct {
@@ -92,7 +92,7 @@ func ganteng(w http.ResponseWriter, r *http.Request, s *mgo.Session) []byte {
 type UserHandler int
 
 func (u UserHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	/*ses, err := mgo.Dial("localhost:27017")
+	ses, err := mgo.Dial("localhost:27017")
 	if err != nil {
 		panic(err)
 	}
@@ -100,9 +100,9 @@ func (u UserHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	defer ses.Close()
 	ses.SetMode(mgo.Monotonic, true)
 
-	//io.WriteString(res, ganteng(res, req, ses))*/
+	io.WriteString(res, string(ganteng(res, req, ses)))
 	fmt.Println(req.Header.Get("Auth"))
-	res.Write([]byte(`{"code":400, "error":"Hahaha iseng aja"}`))
+	//res.Write([]byte(`{"code":400, "error":"Hahaha iseng aja"}`))
 }
 
 func main() {
