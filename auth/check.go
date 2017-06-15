@@ -18,7 +18,7 @@ func CheckToken(token string) bool {
 		return false
 	}
 	signSend := breakToken[2]
-	signReal := ComputeHMAC256(breakToken[0]+"."+breakToken[1], "anggunauranaufalwilliam")
+	signReal := ComputeHMAC256(breakToken[0]+"."+breakToken[1], "studenthack")
 	//fmt.Println(signSend)
 	//fmt.Println(signReal)
 	return hmac.Equal([]byte(signSend), []byte(signReal))

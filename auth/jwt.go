@@ -4,7 +4,13 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"../models/user"
 )
+
+var Token struct {
+	IdToken string `json:"idtoken,omitempty"`
+	JenisAkun int `json:"jenisakun,omitempty"`
+}
 
 func StringToBase64(mes string) string {
 	mess := []byte(mes)

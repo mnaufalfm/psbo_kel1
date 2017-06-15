@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 /*type Rekening struct {
@@ -39,19 +40,19 @@ type Rekening struct {
 }
 
 type Pengguna struct {
-	Id         string     `json:"id,omitempty" bson:"_id,omitempty"`
-	Username   string     `json:"username,omitempty" bson:"username,omitempty"`
-	Password   string     `json:"password,omitempty" bson:"password,omitempty"`
-	FotoProfil string     `json:"fotoprofil,omitempty" bson:"fotoprofil,omitempty"` //simpan alamatnya saja
-	Nama       string     `json:"nama,omitempty" bson:"nama,omitempty"`
-	IdDiri     string     `json:"iddiri,omitempty" bson:"iddiri,omitempty"`
-	JenisID    int        `json:"jenisid,omitempty" bson:"jenisid,omitempty"` //1=KTP, 2=SIM, 3=Paspor
-	TglLahir   string     `json:"tgllahir,omitempty" bson:"tgllahir,omitempty"`
-	Norek      []Rekening `json:"norek,omitempty" bson:"norek,omitempty"`
-	Email      string     `json:"email,omitempty" bson:"email,omitempty"`
-	Gender     string     `json:"gender,omitempty" bson:"gender,omitempty"`
-	NoHp       string     `json:"nohp,omitempty" bson:"nohp,omitempty"`
-	Alamat     string     `json:"alamat,omitempty" bson:"alamat,omitempty"`
+	Id         bson.ObjectId `json:"id,omitempty" bson:"_id,omitempty"`
+	Username   string        `json:"username,omitempty" bson:"username,omitempty"`
+	Password   string        `json:"password,omitempty" bson:"password,omitempty"`
+	FotoProfil string        `json:"fotoprofil,omitempty" bson:"fotoprofil,omitempty"` //simpan alamatnya saja
+	Nama       string        `json:"nama,omitempty" bson:"nama,omitempty"`
+	IdDiri     string        `json:"iddiri,omitempty" bson:"iddiri,omitempty"`
+	JenisID    int           `json:"jenisid,omitempty" bson:"jenisid,omitempty"` //1=KTP, 2=SIM, 3=Paspor
+	TglLahir   string        `json:"tgllahir,omitempty" bson:"tgllahir,omitempty"`
+	Norek      []Rekening    `json:"norek,omitempty" bson:"norek,omitempty"`
+	Email      string        `json:"email,omitempty" bson:"email,omitempty"`
+	Gender     string        `json:"gender,omitempty" bson:"gender,omitempty"`
+	NoHp       string        `json:"nohp,omitempty" bson:"nohp,omitempty"`
+	Alamat     string        `json:"alamat,omitempty" bson:"alamat,omitempty"`
 }
 
 /*type Biasa struct {
@@ -158,25 +159,30 @@ func main() {
 	/*var sum string
 	sum = fmt.Sprintf("%x", sha256.Sum256([]byte("hello world\n")))
 	fmt.Println(sum)*/
+	var user Pengguna
+	objectid := bson.NewObjectId().Hex()
 	a := 5
 	b := "bodo amat"
-	fmt.Printf("hai: %d \"%s\"", a, b)
-	var uu UserHandler
-	http.ListenAndServe(":9000", uu)
-	/*ses, err := mgo.Dial("localhost:27017")
-	if err != nil {
-		panic(err)
-	}
+	fmt.Printf("hai: %d \"%s\" %s", a, b, objectid)
+	//var uu UserHandler
+	//http.ListenAndServe(":9000", uu)
 
-	defer ses.Close()
-	ses.SetMode(mgo.Monotonic, true)
+	// ses, err := mgo.Dial("localhost:27017")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	c := ses.DB("propos").C("user")
+	// defer ses.Close()
+	// ses.SetMode(mgo.Monotonic, true)
 
-	err = c.Find(bson.M{"username": "willywilly"}).One(&user)
-	if err != nil {
-		panic(err)
-	}*/
+	// c := ses.DB("coba").C("cobaa")
+
+	// err = c.Find(bson.M{"username": "apadeh"}).One(&user)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// hee := string(user.Id)
+	// fmt.Printf(" Idnya = %s, Username = %s", hex(hee), user.Username)
 
 	//gan, erro := json.Marshal(user.Id)
 	//if erro != nil {

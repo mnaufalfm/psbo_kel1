@@ -1,0 +1,31 @@
+2017-05-24T08:19:38.810+0700 I CONTROL  [initandlisten] MongoDB starting : pid=2864 port=27017 dbpath=D:\Project\Go\studenthack_api\studenthack 64-bit host=Laper
+2017-05-24T08:19:38.813+0700 I CONTROL  [initandlisten] targetMinOS: Windows 7/Windows Server 2008 R2
+2017-05-24T08:19:38.813+0700 I CONTROL  [initandlisten] db version v3.4.4
+2017-05-24T08:19:38.814+0700 I CONTROL  [initandlisten] git version: 888390515874a9debd1b6c5d36559ca86b44babd
+2017-05-24T08:19:38.814+0700 I CONTROL  [initandlisten] OpenSSL version: OpenSSL 1.0.1u-fips  22 Sep 2016
+2017-05-24T08:19:38.815+0700 I CONTROL  [initandlisten] allocator: tcmalloc
+2017-05-24T08:19:38.815+0700 I CONTROL  [initandlisten] modules: none
+2017-05-24T08:19:38.815+0700 I CONTROL  [initandlisten] build environment:
+2017-05-24T08:19:38.816+0700 I CONTROL  [initandlisten]     distmod: 2008plus-ssl
+2017-05-24T08:19:38.816+0700 I CONTROL  [initandlisten]     distarch: x86_64
+2017-05-24T08:19:38.816+0700 I CONTROL  [initandlisten]     target_arch: x86_64
+2017-05-24T08:19:38.816+0700 I CONTROL  [initandlisten] options: { config: "C:\MongoDB\Server\3.4\bin\mongod.cfg", storage: { dbPath: "D:\Project\Go\studenthack_api\studenthack" }, systemLog: { destination: "file", path: "D:\Project\Go\studenthack_api\studenthack\mongod.log" } }
+2017-05-24T08:19:38.818+0700 I -        [initandlisten] Detected data files in D:\Project\Go\studenthack_api\studenthack created by the 'wiredTiger' storage engine, so setting the active storage engine to 'wiredTiger'.
+2017-05-24T08:19:38.818+0700 I STORAGE  [initandlisten] wiredtiger_open config: create,cache_size=3515M,session_max=20000,eviction=(threads_min=4,threads_max=4),config_base=false,statistics=(fast),log=(enabled=true,archive=true,path=journal,compressor=snappy),file_manager=(close_idle_time=100000),checkpoint=(wait=60,log_size=2GB),statistics_log=(wait=0),
+2017-05-24T08:19:40.363+0700 I CONTROL  [initandlisten] 
+2017-05-24T08:19:40.364+0700 I CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
+2017-05-24T08:19:40.364+0700 I CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
+2017-05-24T08:19:40.364+0700 I CONTROL  [initandlisten] 
+2017-05-24T08:19:40.924+0700 I FTDC     [initandlisten] Initializing full-time diagnostic data capture with directory 'D:/Project/Go/studenthack_api/studenthack/diagnostic.data'
+2017-05-24T08:19:40.926+0700 I NETWORK  [thread1] waiting for connections on port 27017
+2017-05-24T08:23:28.382+0700 I CONTROL  [thread2] Ctrl-C signal
+2017-05-24T08:23:28.382+0700 I CONTROL  [consoleTerminate] got CTRL_C_EVENT, will terminate after current cmd ends
+2017-05-24T08:23:28.382+0700 I NETWORK  [consoleTerminate] shutdown: going to close listening sockets...
+2017-05-24T08:23:28.383+0700 I NETWORK  [consoleTerminate] closing listening socket: 488
+2017-05-24T08:23:28.383+0700 I NETWORK  [consoleTerminate] shutdown: going to flush diaglog...
+2017-05-24T08:23:28.384+0700 I FTDC     [consoleTerminate] Shutting down full-time diagnostic data capture
+2017-05-24T08:23:28.397+0700 I STORAGE  [consoleTerminate] WiredTigerKVEngine shutting down
+2017-05-24T08:23:28.787+0700 I STORAGE  [consoleTerminate] shutdown: removing fs lock...
+2017-05-24T08:23:28.788+0700 I CONTROL  [consoleTerminate] now exiting
+2017-05-24T08:23:28.788+0700 I CONTROL  [consoleTerminate] shutting down with code:12
+2017-05-24T08:23:28.788+0700 I
