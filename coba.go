@@ -109,6 +109,31 @@ func (u UserHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 func main() {
 	//var berisik Berisik
 
+	// rand.Seed(time.Now().Unix())
+	// fmt.Println(rand.Intn(10-0) + 0)
+
+	// skrg := time.Now()
+	// fmt.Println(skrg)
+	// sub, _ := time.ParseDuration("72h")
+	// fmt.Println(sub)
+	// hm := skrg.Add(sub)
+	// fmt.Println(hm)
+	// ca := hm.String()
+	// fmt.Println(ca)
+	// ba, _ := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", ca)
+	// fmt.Println(ba)
+	// if ba == hm {
+	// 	fmt.Println("Yes")
+	// }
+	// fmt.Println(hm.Unix())
+
+	a := "Hai"
+	fmt.Println(a)
+	b := a + "Nama"
+	fmt.Println(b)
+	// c := b - "Nama"
+	// fmt.Println(c)
+
 	//jsonhaha := []byte(`{"maklumi":5,"haha":"blabla"}`)
 	//jsonblob := "{username: 'williamhanugra', pass: 'ganteng123', fotoprofil: 'blabla.jpg',nama: 'Lu William Hanugra',iddiri: '135060700111084',jenisid: 1,tgllahir: '14 April 2017',norek: [{norekening:'44444',atasnama:'William Hanugra',bank:'IPB Syariah'}],email: 'cipatonthesky@gmail.com',gender: 'L',nohp: '087873766464',alamat: 'Pondok Bu Sri'}"
 
@@ -159,11 +184,11 @@ func main() {
 	/*var sum string
 	sum = fmt.Sprintf("%x", sha256.Sum256([]byte("hello world\n")))
 	fmt.Println(sum)*/
-	var user Pengguna
-	objectid := bson.NewObjectId().Hex()
-	a := 5
-	b := "bodo amat"
-	fmt.Printf("hai: %d \"%s\" %s", a, b, objectid)
+	// var user Pengguna
+	// objectid := bson.NewObjectId().Hex()
+	// a := 5
+	// b := "bodo amat"
+	// fmt.Printf("hai: %d \"%s\" %s", a, b, objectid)
 	//var uu UserHandler
 	//http.ListenAndServe(":9000", uu)
 
