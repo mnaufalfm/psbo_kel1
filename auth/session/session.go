@@ -1,35 +1,48 @@
 package session
 
 import (
-	"crypto/cipher"
-	"crypto/des"
 	"math/rand"
 	"strconv"
 	"time"
 
 	"sync"
 
-	"fmt"
-
+	".."
 	"gopkg.in/mgo.v2"
 )
 
-var Client struct {
+type Client struct {
 	IdUser      string
 	LogId       string
 	LoggedIn    bool
 	ExpiredTime int64
 }
 
-var SessionStore map[string]bool
+var SessionStore map[string]Client
 
-func CheckSession(s *mgo.Session, token string) bool {
+//return true jika token valid, return false jika token invalid
+func CheckSession(s *mgo.Session, token string, id string) (bool, string) {
+	token = jwt.DecryptTripleDES(token, "bingunga")
+	exp, ex := SessionStore[token]
+	if !ex {
+		return false, "Anda belum Login"
+	}
 
-	return true
+	if exp.ExpiredTime >= time.Now().Unix() {
+		DeleteSession(s, token)
+		return false, "Sesi Anda Telah Habis"
+	}
+
+	if exp.IdUser != id {
+		return false, "Sesi Tidak Valid"
+	}
+
+	return true, "Sesi Valid"
 }
 
-func CreateSession(s *mgo.Session, id string) string {
-	if !CheckSession(s, id) {
+func CreateSession(s *mgo.Session, id string) (bool, string) {
+	_, ex := SessionStore[id]
+	if !ex {
 		var klien Client
 		var storageMutex sync.RWMutex
 
@@ -42,25 +55,24 @@ func CreateSession(s *mgo.Session, id string) string {
 		klien.LoggedIn = true
 
 		rand.Seed(now.Unix())
-		plaintext := []byte(strconv.FormatInt(rand.Int63(), 10))
-		triplekey := "studenth" + "studenth" + "studenth"
-		block, _ := des.NewTripleDESCipher([]byte(triplekey))
-		iv := []byte("cobasaja")
-		mode := cipher.NewCBCEncrypter(block, iv)
-		sessionidbyte := make([]byte, len(plaintext))
-		mode.CryptBlocks(sessionidbyte, plaintext)
-		sessionid := fmt.Sprintf("%x", sessionidbyte)
+		randid := strconv.FormatInt(rand.Int63(), 10)
+		sessionid := jwt.EncryptTripleDES(randid, "bingunga")
 		klien.LogId = sessionid
 
 		storageMutex.Lock()
 		SessionStore[sessionid] = klien
 		storageMutex.Unlock()
 
-		return sessionid
+		return true, sessionid
 	}
-	return ""
+	return false, ""
 }
 
 func DeleteSession(s *mgo.Session, token string) bool {
-	return true
+	_, ex := SessionStore[token]
+	if ex {
+		delete(SessionStore, token)
+		return true
+	}
+	return false
 }

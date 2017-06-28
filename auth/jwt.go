@@ -1,15 +1,17 @@
 package jwt
 
 import (
+	"crypto/cipher"
+	"crypto/des"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
-	"../models/user"
+	"fmt"
 )
 
 var Token struct {
-	IdToken string `json:"idtoken,omitempty"`
-	JenisAkun int `json:"jenisakun,omitempty"`
+	IdToken   string `json:"idtoken,omitempty"`
+	JenisAkun int    `json:"jenisakun,omitempty"`
 }
 
 func StringToBase64(mes string) string {
@@ -39,4 +41,35 @@ func ComputeHMAC256(mes string, key string) string {
 	h := hmac.New(sha256.New, kun)
 	h.Write(pes)
 	return base64.RawStdEncoding.EncodeToString(h.Sum(nil))
+}
+
+func KeyTripleDES(key string) string {
+	if len(key) > des.BlockSize {
+		return key[:des.BlockSize] + key[:des.BlockSize] + key[:des.BlockSize]
+	} else {
+		padding := key[:(des.BlockSize - len(key))]
+		return key + padding + key + padding + key + padding
+	}
+}
+
+func EncryptTripleDES(mes string, key string) string {
+	key = KeyTripleDES(key)
+	block, _ := des.NewTripleDESCipher([]byte(key))
+	iv := []byte("cobasaja")
+	mode := cipher.NewCBCEncrypter(block, iv)
+	encrypbyte := make([]byte, len(mes))
+	mode.CryptBlocks(encrypbyte, []byte(mes))
+	encryp := fmt.Sprintf("%x", encrypbyte)
+	return encryp
+}
+
+func DecryptTripleDES(cip string, key string) string {
+	key = KeyTripleDES(key)
+	block, _ := des.NewTripleDESCipher([]byte(key))
+	iv := []byte("cobasaja")
+	mode := cipher.NewCBCDecrypter(block, iv)
+	textbyte := make([]byte, len(cip))
+	mode.CryptBlocks(textbyte, []byte(cip))
+	text := fmt.Sprintf("%x", textbyte)
+	return text
 }

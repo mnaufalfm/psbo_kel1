@@ -55,6 +55,13 @@ type Pengguna struct {
 	Alamat     string        `json:"alamat,omitempty" bson:"alamat,omitempty"`
 }
 
+type Client struct {
+	IdUser      string
+	LogId       string
+	LoggedIn    bool
+	ExpiredTime int64
+}
+
 /*type Biasa struct {
 	Nama  string `json:"nama"`
 	Kelas string `json:"kelas"`
@@ -109,6 +116,24 @@ func (u UserHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 func main() {
 	//var berisik Berisik
 
+	// a := time.Now()
+	// sub, _ := time.ParseDuration("1s")
+	// c := a.Add(sub)
+	// fmt.Println(a.Unix())
+	// fmt.Println(c.Unix())
+	// if a.Unix() > c.Unix() {
+	// 	fmt.Println("Hai")
+	// } else if a.Unix() < c.Unix() {
+	// 	fmt.Println("Hello")
+	// }
+
+	var coba map[string]Client
+
+	_, ok := coba["syalala"]
+	if !ok {
+		fmt.Println("Hai")
+	}
+
 	// rand.Seed(time.Now().Unix())
 	// fmt.Println(rand.Intn(10-0) + 0)
 
@@ -127,10 +152,12 @@ func main() {
 	// }
 	// fmt.Println(hm.Unix())
 
-	a := "Hai"
-	fmt.Println(a)
-	b := a + "Nama"
-	fmt.Println(b)
+	// a := "Hai"
+	// fmt.Println(a)
+	// b := a + "Nama"
+	// fmt.Println(b)
+	// a = a + a + a
+	// fmt.Println(a)
 	// c := b - "Nama"
 	// fmt.Println(c)
 
