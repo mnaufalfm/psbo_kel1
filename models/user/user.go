@@ -11,8 +11,6 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	"strconv"
-
 	"../../auth"
 	"../../auth/session"
 )
@@ -43,6 +41,7 @@ func SuccessReturn(w http.ResponseWriter, pesan string, code int) string {
 	return fmt.Sprintf("{\"success\": %d, \"message\": \"%s\"}", code, pesan)
 }
 
+//Fungsi untuk login
 func LoginUser(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 	//Digunakan untuk login ke halaman user
 	var log Pengguna
@@ -74,30 +73,37 @@ func LoginUser(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 		if !stat {
 			return ErrorReturn(w, "Login Gagal", http.StatusBadRequest)
 		}
-		return fmt.Sprintf("{\"token\": \"%s\", \"access\": \"%s\", \"session\": \"%s\"}", jwt.TokenMaker(log.Id, "studenthack"), jwt.StringToBase64(log.Username+" "+strconv.Itoa(log.LoginType)), msg)
+		// return fmt.Sprintf("{\"token\": \"%s\", \"access\": \"%s\", \"session\": \"%s\"}", jwt.TokenMaker(log.Id, "studenthack"), jwt.StringToBase64(log.Username+" "+strconv.Itoa(log.LoginType)), msg)
+		return fmt.Sprintf("{\"token\": \"%s\", \"session\": \"%s\"}", jwt.TokenMaker(log.Id, "studenthack"), msg)
 	}
 
 	return ErrorReturn(w, "Password Salah", http.StatusForbidden)
 }
 
+//Fungsi untuk logout
 func LogoutUser(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
+	ses := s.Copy()
+	defer ses.Close()
+
 	token := r.Header.Get("Auth")
 	sess := r.Header.Get("Session")
 
 	token = strings.Split(token, ".")[1]
 
 	if jwt.CheckToken(token) {
-		if session.CheckSession(s, sess, jwt.Base64ToString(token)) {
-			if session.DeleteSession(s, sess) {
+		if stat, msg := session.CheckSession(ses, sess, jwt.Base64ToString(token)); stat {
+			if session.DeleteSession(ses, sess) {
 				return SuccessReturn(w, "Logout Sukses", http.StatusOK)
 			}
+		} else {
+			return ErrorReturn(w, msg, http.StatusBadRequest)
 		}
 	}
 
 	return ErrorReturn(w, "Logout Gagal", http.StatusBadRequest)
 }
 
-//Digunakan untuk mengontrol path dari user
+//Digunakan untuk mengontrol login/logout
 func UserController(urle string, w http.ResponseWriter, r *http.Request) string {
 
 	urle = urle[1:]

@@ -1,1 +1,9 @@
+HAL PENTING:
+1. 
+
 Session ada rencana disimpan ke database
+
+Setelah login --> kirim token (jwt) dan session
+
+token   --> Header["Auth"]
+session --> Header["Session"]

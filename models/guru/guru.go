@@ -11,6 +11,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"../../auth"
+	"../../auth/session"
 )
 
 type Pelajaran struct {
@@ -57,6 +58,7 @@ func GetGuru(s *mgo.Session, w http.ResponseWriter, r *http.Request, path string
 	//resBody, err := ioutil.ReadAll(r.Body)
 	//token := string(resBody)
 	token := r.Header.Get("Auth")
+	session := r.Header.Get("Session")
 	if jwt.CheckToken(token) {
 		idaccess := strings.Split(token, ".")[1]
 		idaccesss := jwt.Base64ToString(idaccess)
@@ -85,10 +87,15 @@ func EditGuru(s *mgo.Session, w http.ResponseWriter, r *http.Request, path strin
 	var bsonn map[string]interface{}
 
 	token := r.Header.Get("Auth")
+	sesi := r.Header.Get("Session")
 	tokenSplit := strings.Split(token, ".")
 
 	if !jwt.CheckToken(token) {
 		return ErrorReturn(w, "Token yang Dikirimkan Invalid", http.StatusForbidden)
+	}
+
+	if stat, msg := session.CheckSession(s, sesi, tokenSplit[1]); !stat {
+		return ErrorReturn(w, msg, http.StatusBadRequest)
 	}
 
 	ses := s.Copy()
@@ -98,7 +105,7 @@ func EditGuru(s *mgo.Session, w http.ResponseWriter, r *http.Request, path strin
 	if err != nil {
 		return ErrorReturn(w, "Format Request Salah", http.StatusBadRequest)
 	}
-	
+
 	mess := jwt.Base64ToString(tokenSplit[1])
 	messhex := hex.EncodeToString([]byte(mess))
 
