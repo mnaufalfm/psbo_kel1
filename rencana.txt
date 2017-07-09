@@ -1,9 +1,14 @@
 HAL PENTING:
-1. 
+1. Pengecekan Header kosong belum dilakukan!!! BAHAYA!!
 
 Session ada rencana disimpan ke database
 
-Setelah login --> kirim token (jwt) dan session
+Setelah login --> kirim token (jwt), role, dan session
 
 token   --> Header["Auth"]
 session --> Header["Session"]
+
+
+func GetGuru
+Yang boleh get guru lengkap --> yang punya session yang sesuai (CheckSession) dan token yang valid
+Jadi dicek dulu kevalidan sebuah token baru dicek kevalidan sessionnya

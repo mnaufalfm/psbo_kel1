@@ -6,6 +6,9 @@ import (
 	"io"
 
 	//"./models/projek"
+	"sync"
+
+	"./auth"
 	"./models/user"
 )
 
@@ -25,14 +28,15 @@ func main() {
 	var pengg UserHandler
 	var proj ProjekHandler
 
+	auth.SessionStore = make(map[string]auth.Client)
+	auth.StorageMutex = sync.RWMutex{}
+
 	mux := http.NewServeMux()
-	mux.Handle("/user/", pengg)
 	mux.Handle("/login/", pengg)
-	mux.Handle("/registrasi/", pengg)
-	mux.Handle("/edit/", pengg)
+	mux.Handle("/logout/", pengg)
 	mux.Handle("/projek/", proj)
 	mux.Handle("/like/", proj)
-	mux.Handle("/comment/",proj)
+	mux.Handle("/comment/", proj)
 
 	http.ListenAndServe(":9000", mux)
 }

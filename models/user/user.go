@@ -11,8 +11,10 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
+	"encoding/hex"
+
 	"../../auth"
-	"../../auth/session"
+	"../../const"
 )
 
 type Pengguna struct {
@@ -56,7 +58,7 @@ func LoginUser(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 		return ErrorReturn(w, "Login Gagal", http.StatusBadRequest)
 	}
 
-	c := ses.DB("studenthack").C("users")
+	c := ses.DB(konst.DBName).C(konst.DBUser)
 
 	encryptPassLogin := fmt.Sprintf("%x", sha256.Sum256([]byte(log.Password)))
 
@@ -67,17 +69,41 @@ func LoginUser(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 	}
 
 	encryptPass := log.Password
-	if encryptPass == encryptPassLogin {
-		w.WriteHeader(http.StatusOK)
-		stat, msg := session.CreateSession(ses, log.Id)
-		if !stat {
-			return ErrorReturn(w, "Login Gagal", http.StatusBadRequest)
-		}
-		// return fmt.Sprintf("{\"token\": \"%s\", \"access\": \"%s\", \"session\": \"%s\"}", jwt.TokenMaker(log.Id, "studenthack"), jwt.StringToBase64(log.Username+" "+strconv.Itoa(log.LoginType)), msg)
-		return fmt.Sprintf("{\"token\": \"%s\", \"session\": \"%s\"}", jwt.TokenMaker(log.Id, "studenthack"), msg)
+
+	fmt.Printf("%s %s", encryptPassLogin, encryptPass)
+
+	if encryptPass != encryptPassLogin {
+		return ErrorReturn(w, "Password Salah", http.StatusForbidden)
 	}
 
-	return ErrorReturn(w, "Password Salah", http.StatusForbidden)
+	stat, msg := auth.CreateSession(ses, hex.EncodeToString([]byte(log.Id)))
+	if !stat {
+		return ErrorReturn(w, "Login Gagal", http.StatusForbidden)
+	}
+
+	stat, role := konst.GetRoleString(log.LoginType)
+	if !stat {
+		return ErrorReturn(w, role, http.StatusBadRequest)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	return fmt.Sprintf("{\"token\": \"%s\", \"role\": \"%s\", \"session\": \"%s\"}", auth.TokenMaker(log.Id, "studenthack"), role, msg)
+
+	// if encryptPass == encryptPassLogin {
+	// 	w.WriteHeader(http.StatusOK)
+	// 	stat, msg := auth.CreateSession(ses, hex.EncodeToString([]byte(log.Id)))
+	// 	if !stat {
+	// 		return ErrorReturn(w, "Login Gagal", http.StatusBadRequest)
+	// 	}
+	// 	// return fmt.Sprintf("{\"token\": \"%s\", \"access\": \"%s\", \"session\": \"%s\"}", jwt.TokenMaker(log.Id, "studenthack"), jwt.StringToBase64(log.Username+" "+strconv.Itoa(log.LoginType)), msg)
+	// 	stat, role := konst.GetRoleString(log.LoginType)
+	// 	if !stat {
+	// 		return ErrorReturn(w, role, http.StatusBadRequest)
+	// 	}
+	// 	return fmt.Sprintf("{\"token\": \"%s\", \"role\": \"%s\", \"session\": \"%s\"}", auth.TokenMaker(log.Id, "studenthack"), role, msg)
+	// }
+
+	// return ErrorReturn(w, "Password Salah", http.StatusForbidden)
 }
 
 //Fungsi untuk logout
@@ -88,19 +114,33 @@ func LogoutUser(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 	token := r.Header.Get("Auth")
 	sess := r.Header.Get("Session")
 
-	token = strings.Split(token, ".")[1]
+	tokenSplit := strings.Split(token, ".")[1]
 
-	if jwt.CheckToken(token) {
-		if stat, msg := session.CheckSession(ses, sess, jwt.Base64ToString(token)); stat {
-			if session.DeleteSession(ses, sess) {
-				return SuccessReturn(w, "Logout Sukses", http.StatusOK)
-			}
-		} else {
-			return ErrorReturn(w, msg, http.StatusBadRequest)
-		}
+	if stat, msg := auth.CheckToken(token); !stat {
+		return ErrorReturn(w, msg, http.StatusForbidden)
 	}
 
-	return ErrorReturn(w, "Logout Gagal", http.StatusBadRequest)
+	if stat, msg := auth.CheckSession(ses, sess, auth.Base64ToString(tokenSplit)); !stat {
+		return ErrorReturn(w, msg, http.StatusBadRequest)
+	}
+
+	if stat, msg := auth.DeleteSession(ses, auth.Base64ToString(tokenSplit)); !stat {
+		return ErrorReturn(w, msg, http.StatusBadRequest)
+	}
+
+	fmt.Println("LogoutUser")
+
+	// if stat, _ := auth.CheckToken(token); stat {
+	// 	if stat, msg := auth.CheckSession(ses, sess, auth.Base64ToString(token)); stat {
+	// 		if stat, _ := auth.DeleteSession(ses, sess); stat {
+	// 			return SuccessReturn(w, "Logout Sukses", http.StatusOK)
+	// 		}
+	// 	} else {
+	// 		return ErrorReturn(w, msg, http.StatusBadRequest)
+	// 	}
+	// }
+
+	return SuccessReturn(w, "Logout Sukses", http.StatusOK)
 }
 
 //Digunakan untuk mengontrol login/logout
@@ -108,7 +148,7 @@ func UserController(urle string, w http.ResponseWriter, r *http.Request) string 
 
 	urle = urle[1:]
 	pathe := strings.Split(urle, "/")
-	fmt.Println(pathe[0] + " " + pathe[1])
+	// fmt.Println(pathe[0] + " " + pathe[1])
 
 	ses, err := mgo.Dial("localhost:27017")
 	if err != nil {

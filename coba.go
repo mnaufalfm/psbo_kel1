@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 
 	"net/http"
 
@@ -100,16 +99,18 @@ func ganteng(w http.ResponseWriter, r *http.Request, s *mgo.Session) []byte {
 type UserHandler int
 
 func (u UserHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	ses, err := mgo.Dial("localhost:27017")
-	if err != nil {
-		panic(err)
-	}
+	// ses, err := mgo.Dial("localhost:27017")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	defer ses.Close()
-	ses.SetMode(mgo.Monotonic, true)
+	// defer ses.Close()
+	// ses.SetMode(mgo.Monotonic, true)
 
-	io.WriteString(res, string(ganteng(res, req, ses)))
-	fmt.Println(req.Header.Get("Auth"))
+	// io.WriteString(res, string(ganteng(res, req, ses)))
+	// fmt.Println(req.Header.Get("Auth"))
+
+	fmt.Println(req.Header.Get("Coba"))
 	//res.Write([]byte(`{"code":400, "error":"Hahaha iseng aja"}`))
 }
 
@@ -127,12 +128,12 @@ func main() {
 	// 	fmt.Println("Hello")
 	// }
 
-	var coba map[string]Client
+	// var coba map[string]Client
 
-	_, ok := coba["syalala"]
-	if !ok {
-		fmt.Println("Hai")
-	}
+	// _, ok := coba["syalala"]
+	// if !ok {
+	// 	fmt.Println("Hai")
+	// }
 
 	// rand.Seed(time.Now().Unix())
 	// fmt.Println(rand.Intn(10-0) + 0)
@@ -216,8 +217,8 @@ func main() {
 	// a := 5
 	// b := "bodo amat"
 	// fmt.Printf("hai: %d \"%s\" %s", a, b, objectid)
-	//var uu UserHandler
-	//http.ListenAndServe(":9000", uu)
+	// var uu UserHandler
+	// http.ListenAndServe(":9000", uu)
 
 	// ses, err := mgo.Dial("localhost:27017")
 	// if err != nil {
@@ -281,4 +282,7 @@ func main() {
 	//var bsonn map[string]interface{}
 	//err = json.Unmarshal([]byte(s), &bsonn)
 	//fmt.Println(bsonn)
+
+	const lettersNumbers = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	fmt.Println(string(lettersNumbers[0]))
 }

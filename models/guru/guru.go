@@ -11,7 +11,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"../../auth"
-	"../../auth/session"
 )
 
 type Pelajaran struct {
@@ -46,9 +45,13 @@ func SuccessReturn(w http.ResponseWriter, pesan string, code int) string {
 	return fmt.Sprintf("{\"success\": %d, \"message\": \"%s\"}", code, pesan)
 }
 
-func GetGuru(s *mgo.Session, w http.ResponseWriter, r *http.Request, path string) string {
+func GetGuru(s *mgo.Session, w http.ResponseWriter, r *http.Request, path string) (bool, string) {
 	//Jika membuka profil user lain dan milik sendiri
 	//linknya:9000/siswa/noinduk
+
+	//Format Return: bool, string
+	//bool: true: menandakan user mengakses datanya sendiri, false: menandakan user mengakses data orang lain
+	//string: json pengembalian
 	var guru Guru
 	ses := s.Copy()
 	defer ses.Close()
@@ -58,14 +61,31 @@ func GetGuru(s *mgo.Session, w http.ResponseWriter, r *http.Request, path string
 	//resBody, err := ioutil.ReadAll(r.Body)
 	//token := string(resBody)
 	token := r.Header.Get("Auth")
-	session := r.Header.Get("Session")
+	sess := r.Header.Get("Session")
+
+	tokenSplit := strings.Split(token, ".")
+
+	if !auth.CheckToken(token) {
+		err := c.Find(bson.M{"nip": path}).Select(bson.M{"_id": 0, "password": 0, "email": 0, "emailortu": 0, "tgllahir": 0, "nohp": 0, "alamat": 0, "matapelajaran": 0}).One(&guru)
+		if err != nil {
+			return false, ErrorReturn(w, "User Tidak Ditemukan", http.StatusBadRequest)
+		}
+	}
+
+	if sess == "" || !auth.CheckSession(sess) {
+		err := c.Find(bson.M{"nip": path}).Select(bson.M{"_id": 0, "password": 0, "email": 0, "emailortu": 0, "tgllahir": 0, "nohp": 0, "alamat": 0, "matapelajaran": 0}).One(&guru)
+		if err != nil {
+			return false, ErrorReturn(w, "User Tidak Ditemukan", http.StatusBadRequest)
+		}
+	}
+
 	if jwt.CheckToken(token) {
 		idaccess := strings.Split(token, ".")[1]
 		idaccesss := jwt.Base64ToString(idaccess)
 		idhex := hex.EncodeToString([]byte(idaccesss))
 		err := c.Find(bson.M{"nip": path}).One(&guru)
 		if err != nil {
-			return ErrorReturn(w, "User Tidak Ditemukan", http.StatusBadRequest)
+			return false, ErrorReturn(w, "User Tidak Ditemukan", http.StatusBadRequest)
 		}
 		if idhex != guru.Id {
 			err = c.Find(bson.M{"nip": path}).Select(bson.M{"_id": 0, "password": 0, "email": 0, "emailortu": 0, "tgllahir": 0, "nohp": 0, "alamat": 0, "matapelajaran": 0}).One(&guru)
@@ -176,7 +196,7 @@ func GuruController(urle string, w http.ResponseWriter, r *http.Request) string 
 		if pathe[0] == "edit" {
 			return EditGuru(ses, w, r, pathe[1])
 		} else if pathe[1] == "" {
-			return GetSiswa(ses, w, r, pathe[1])
+			return GetGuru(ses, w, r, pathe[1])
 		}
 	}
 	return ErrorReturn(w, "Path Tidak Ditemukan", http.StatusNotFound)

@@ -1,4 +1,4 @@
-package jwt
+package auth
 
 import (
 	"crypto/cipher"
@@ -6,6 +6,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 )
 
@@ -21,7 +22,7 @@ func StringToBase64(mes string) string {
 
 func Base64ToString(bes64 string) string {
 	mess, _ := base64.StdEncoding.DecodeString(bes64)
-	return string(mess)
+	return hex.EncodeToString(mess)
 }
 
 //message dalam bentuk json
@@ -64,12 +65,14 @@ func EncryptTripleDES(mes string, key string) string {
 }
 
 func DecryptTripleDES(cip string, key string) string {
+	cc, _ := hex.DecodeString(cip)
+	cip = string(cc)
 	key = KeyTripleDES(key)
 	block, _ := des.NewTripleDESCipher([]byte(key))
 	iv := []byte("cobasaja")
 	mode := cipher.NewCBCDecrypter(block, iv)
 	textbyte := make([]byte, len(cip))
 	mode.CryptBlocks(textbyte, []byte(cip))
-	text := fmt.Sprintf("%x", textbyte)
-	return text
+	// text := fmt.Sprintf("%x", textbyte)
+	return string(textbyte)
 }
