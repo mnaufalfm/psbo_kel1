@@ -145,7 +145,6 @@ func LogoutUser(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 
 //Digunakan untuk mengontrol login/logout
 func UserController(urle string, w http.ResponseWriter, r *http.Request) string {
-
 	urle = urle[1:]
 	pathe := strings.Split(urle, "/")
 	// fmt.Println(pathe[0] + " " + pathe[1])

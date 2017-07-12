@@ -126,8 +126,6 @@ func EditSiswa(s *mgo.Session, w http.ResponseWriter, r *http.Request, path stri
 	messhex := auth.Base64ToString(tokenSplit[1])
 	// messhex := hex.EncodeToString([]byte(mess))
 
-	jsonsiswa, _ := json.Marshal(siswa)
-
 	err = c.Find(bson.M{"_id": bson.ObjectId(messhex)}).One(&user)
 	if err != nil {
 		return ErrorReturn(w, "User Tidak Ditemukan", http.StatusBadRequest)
@@ -161,6 +159,8 @@ func EditSiswa(s *mgo.Session, w http.ResponseWriter, r *http.Request, path stri
 			return ErrorReturn(w, "Tidak Boleh Mengedit Data Ini", http.StatusForbidden)
 		}
 	}
+
+	jsonsiswa, _ := json.Marshal(siswa)
 
 	err = json.Unmarshal(jsonsiswa, &bsonn)
 	if err != nil {

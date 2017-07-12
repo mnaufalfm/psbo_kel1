@@ -129,14 +129,15 @@ func main() {
 	ses.SetMode(mgo.Monotonic, true)
 
 	c := ses.DB("coba").C("cobas")
-	_ = c.Find(bson.M{}).Select(bson.M{"_id": 1}).All(&id)
-	for i := 0; i < len(id); i++ {
-		a := id[i].(bson.M)
-		jsonn, _ := json.Marshal(a)
-		fmt.Println(string(jsonn))
-		jsonn = jsonn[8 : len(jsonn)-2]
-		fmt.Println(string(jsonn))
-	}
+	_ = c.Find()
+	// _ = c.Find(bson.M{}).Select(bson.M{"_id": 1}).All(&id)
+	// for i := 0; i < len(id); i++ {
+	// 	a := id[i].(bson.M)
+	// 	jsonn, _ := json.Marshal(a)
+	// 	fmt.Println(string(jsonn))
+	// 	jsonn = jsonn[8 : len(jsonn)-2]
+	// 	fmt.Println(string(jsonn))
+	// }
 	// _ = json.Unmarshal(jsonn, idd)
 	// fmt.Println(idd)
 

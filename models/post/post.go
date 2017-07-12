@@ -119,24 +119,35 @@ func GetOnePost(s *mgo.Session, w http.ResponseWriter, r *http.Request, path str
 	returnPost["id"] = hex.EncodeToString([]byte(post.Id))
 	returnPost["post"] = post.IsiPost
 	returnPost["jumlahkomen"] = post.JumlahComment
-	returnPost["komen"] = post.Comment
+	// returnPost["komen"] = post.Comment
 	returnPost["jumlahlike"] = post.JumlahLike
 
 	//Menentukan isi dari returnPost["profilpemilik"]
+	var user user.Pengguna
+	d := ses.DB(konst.DBName).C(konst.DBUser)
+	err := d.Find(bson.M{"_id": bson.ObjectId(post.IdPengirim)}).One(&user)
+	if err != nil {
+		return ErrorReturn(w, "Akun Pemilik Tidak Ditemukan", http.StatusBadRequest)
+	}
+	stat, role := konst.GetRoleString(user.LoginType)
+	if !stat {
+		return ErrorReturn(w, role, http.StatusBadRequest)
+	}
+
 	if auth.Base64ToString(tokenSplit[1]) == post.IdPengirim {
-		returnPost["profilpemilik"] = "/profil/"
+		returnPost["profilpemilik"] = "/" + role + "/profil/"
 	} else {
-		var user user.Pengguna
-		d := ses.DB(konst.DBName).C(konst.DBUser)
-		err := d.Find(bson.M{"_id": bson.ObjectId(post.IdPengirim)}).One(&user)
-		if err != nil {
-			return ErrorReturn(w, "Akun Pemilik Tidak Ditemukan", http.StatusBadRequest)
-		}
-		stat, role := konst.GetRoleString(user.LoginType)
-		if !stat {
-			return ErrorReturn(w, role, http.StatusBadRequest)
-		}
 		returnPost["profilpemilik"] = "/" + role + "/" + post.IdPengirim
+	}
+
+	//Mengurusi komentar
+	returnPost["komen"] = []string{}
+	for i := 0; i < len(post.Comment); i++ {
+		stat, msg := comment.GetComment(ses, w, r, post.Comment[i])
+		if !stat {
+			return ErrorReturn(w, msg, http.StatusBadRequest)
+		}
+		returnPost["komen"] = append(returnPost["komen"], msg)
 	}
 
 	w.WriteHeader(http.StatusOK)
