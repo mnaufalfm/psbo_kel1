@@ -4,16 +4,17 @@ import (
 	"net/http"
 
 	"io"
-
-	//"./models/projek"
 	"sync"
 
 	"./auth"
+	"./models/guru"
 	"./models/user"
+	"./models/projek"
 )
 
 type UserHandler int
 type ProjekHandler int
+type GuruHandler int
 
 func (u UserHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	//io.WriteString(res,req.RequestURI)
@@ -21,17 +22,23 @@ func (u UserHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 }
 
 func (p ProjekHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	//io.WriteString(res, projek.ProjekController(req.RequestURI, res, req))
+	io.WriteString(res, projek.ProjekController(req.RequestURI, res, req))
+}
+
+func (g GuruHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+	io.WriteString(res, guru.GuruController(req.RequestURI, res, req))
 }
 
 func main() {
 	var pengg UserHandler
 	var proj ProjekHandler
+	var guru GuruHandler
 
 	auth.SessionStore = make(map[string]auth.Client)
 	auth.StorageMutex = sync.RWMutex{}
 
 	mux := http.NewServeMux()
+	mux.Handle("/guru/", guru)
 	mux.Handle("/login/", pengg)
 	mux.Handle("/logout/", pengg)
 	mux.Handle("/projek/", proj)

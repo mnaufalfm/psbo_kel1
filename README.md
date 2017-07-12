@@ -7,7 +7,7 @@ Cara Menggunakan:
 3. Run router.go dengan cara mengetikkan go run router.go
 4. Port yang digunakan adalah 9000
 
-Tim Kelompok
+Anggota Kelompok
 1. Muhammad Murtadha R (https://github.com/murtadhamr) ~ Frontend Developer
 2. Lu William H (https://github.com/williamhanugra) ~ Frontend Developer & Security Engineer
-4. Muhammad Naufal F M (https://github.com/mnaufalfm) ~ Backend Developer & Database Engineer
+3. Muhammad Naufal F M (https://github.com/naufalfmm) ~ Backend Developer & Database Engineer

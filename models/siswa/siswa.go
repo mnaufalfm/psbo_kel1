@@ -1,10 +1,8 @@
 package siswa
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -12,6 +10,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"../../auth"
+	"../../const"
+	"../user"
 )
 
 type Siswa struct {
@@ -44,108 +44,128 @@ func SuccessReturn(w http.ResponseWriter, pesan string, code int) string {
 	return fmt.Sprintf("{\"success\": %d, \"message\": \"%s\"}", code, pesan)
 }
 
-func CheckDupSiswa(s *mgo.Session, p Siswa) string {
-	var ret string
-
-	ses := s.Copy()
-	defer ses.Close()
-
-	c := ses.DB("studenthack").C("students")
-
-	d, _ := c.Find(bson.M{"noinduk": p.NoInduk}).Count()
-	if d > 0 {
-		ret = "NoInduk"
-	}
-
-	d, _ = c.Find(bson.M{"email": p.Email}).Count()
-	if d > 0 {
-		if ret != "" {
-			ret = ret + ", Email"
-		} else {
-			ret = "Email"
-		}
-	}
-
-	d, _ = c.Find(bson.M{"nohp": p.NoHp}).Count()
-	if d > 0 {
-		if ret != "" {
-			ret = ret + ", Nomor Handphone"
-		} else {
-			ret = "Nomor Handphone"
-		}
-	}
-
-	return ret
-}
-
-func GetSiswa(s *mgo.Session, w http.ResponseWriter, r *http.Request, path string) string {
-	//Jika membuka profil user lain dan milik sendiri
-	//linknya:9000/siswa/noinduk
+//Digunakan untuk membuka profil pribadi
+//Cara menggunakan: http://linknya:9000/siswa/profil/
+func GetProfile(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 	var siswa Siswa
 	ses := s.Copy()
 	defer ses.Close()
 
-	c := ses.DB("studenthack").C("students")
+	token := r.Header.Get(konst.HeaderToken)
+	sess := r.Header.Get(konst.HeaderSession)
+	tokenSplit := strings.Split(token, ".")
 
-	//resBody, err := ioutil.ReadAll(r.Body)
-	//token := string(resBody)
-	token := r.Header.Get("Auth")
-	if jwt.CheckToken(token) {
-		idaccess := strings.Split(token, ".")[1]
-		idaccesss := jwt.Base64ToString(idaccess)
-		idhex := hex.EncodeToString([]byte(idaccesss))
-		err := c.Find(bson.M{"noinduk": path}).One(&siswa)
-		if err != nil {
-			return ErrorReturn(w, "User Tidak Ditemukan", http.StatusBadRequest)
-		}
-		if idhex != siswa.Id {
-			err = c.Find(bson.M{"noinduk": path}).Select(bson.M{"_id": 0, "password": 0, "email": 0, "emailortu": 0, "tgllahir": 0, "nohp": 0, "alamat": 0}).One(&siswa)
-		}
-	} else {
-		_ = c.Find(bson.M{"noinduk": path}).Select(bson.M{"_id": 0, "password": 0}).One(&siswa)
+	if stat, msg := auth.CheckToken(token); !stat {
+		return ErrorReturn(w, msg, http.StatusBadRequest)
 	}
 
-	//Pengaturan return untuk mengatur pengembalian data berdasarkan siapa yang membuka dan profil siapa yang dibuka (belum dilakukan)
+	if stat, msg := auth.CheckSession(ses, sess, auth.Base64ToString(tokenSplit[1])); !stat {
+		return ErrorReturn(w, msg, http.StatusBadRequest)
+	}
+
+	c := ses.DB(konst.DBName).C(konst.DBSiswa)
+
+	err := c.Find(bson.M{"_id": bson.ObjectIdHex(auth.Base64ToString(tokenSplit[1]))}).Select(bson.M{"_id": 0, "password": 0}).One(&siswa)
+	if err != nil {
+		return ErrorReturn(w, "User Tidak Ditemukan", http.StatusBadRequest)
+	}
+
 	w.WriteHeader(http.StatusOK)
-	us, _ := json.Marshal(siswa)
-	return string(us)
+	siswaJson, _ := json.Marshal(siswa)
+	return string(siswaJson)
 }
 
-func EditSiswa(s *mgo.Session, w http.ResponseWriter, r *http.Request, path string) string {
-	//penyesuaian sedikit
+//Digunakan untuk mengakses profil Siswa yang lain
+//Cara menggunakan: http://linknya.com:9000/siswa/nim/
+func GetProfileOther(s *mgo.Session, w http.ResponseWriter, r *http.Request, path string) string {
+	var siswa Siswa
+
 	ses := s.Copy()
 	defer ses.Close()
 
-	reqBody, _ := ioutil.ReadAll(r.Body)
-	req := string(reqBody)
-	token := r.Header.Get("Auth")
+	c := ses.DB(konst.DBName).C(konst.DBSiswa)
+
+	err := c.Find(bson.M{"nip": path}).Select(bson.M{"_id": 0, "password": 0, "email": 0, "emailortu": 0, "tgllahir": 0, "nohp": 0, "alamat": 0, "matapelajaran": 0}).One(&siswa)
+	if err != nil {
+		return ErrorReturn(w, "User Tidak Ditemukan", http.StatusBadRequest)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	siswaJson, _ := json.Marshal(siswa)
+	return string(siswaJson)
+}
+
+//Digunakan untuk mengedit data siswa yang terdapat pada database
+//Format penggunaan http://linknya.com:9000/siswa/edit/
+func EditSiswa(s *mgo.Session, w http.ResponseWriter, r *http.Request, path string) string {
+	var siswa Siswa
+	var bsonn map[string]interface{}
+	var user user.Pengguna
+
+	token := r.Header.Get(konst.HeaderToken)
+	sesi := r.Header.Get(konst.HeaderSession)
 	tokenSplit := strings.Split(token, ".")
-	if req == "" {
+
+	if stat, msg := auth.CheckToken(token); !stat {
+		return ErrorReturn(w, msg, http.StatusForbidden)
+	}
+
+	if stat, msg := auth.CheckSession(s, sesi, auth.Base64ToString(tokenSplit[1])); !stat {
+		return ErrorReturn(w, msg, http.StatusBadRequest)
+	}
+
+	ses := s.Copy()
+	defer ses.Close()
+	c := s.DB(konst.DBName).C(konst.DBSiswa)
+
+	err := json.NewDecoder(r.Body).Decode(&siswa)
+	if err != nil {
 		return ErrorReturn(w, "Format Request Salah", http.StatusBadRequest)
 	}
-	//fmt.Println(tokenSplit[0] + "." + tokenSplit[1] + "." + tokenSplit[2])
-	if !jwt.CheckToken(token) {
-		return ErrorReturn(w, "Token yang Dikirimkan Invalid", http.StatusForbidden)
+
+	messhex := auth.Base64ToString(tokenSplit[1])
+	// messhex := hex.EncodeToString([]byte(mess))
+
+	jsonsiswa, _ := json.Marshal(siswa)
+
+	err = c.Find(bson.M{"_id": bson.ObjectId(messhex)}).One(&user)
+	if err != nil {
+		return ErrorReturn(w, "User Tidak Ditemukan", http.StatusBadRequest)
 	}
-	mess := jwt.Base64ToString(tokenSplit[1])
-	messhex := hex.EncodeToString([]byte(mess))
-	//fmt.Println(mess)
 
-	//kk, _ := json.Marshal(mess)
-	//err := json.Unmarshal([]byte(mess), &sebelumEdit)
-	//if err != nil {
-	//	panic(err)
-	//}
+	//Membatasi data yang dapat diedit
+	if siswa.Id != "" {
+		if user.LoginType != 4 {
+			siswa.Id = ""
+			return ErrorReturn(w, "Tidak Boleh Mengedit Data Ini", http.StatusForbidden)
+		}
+	}
 
-	var bsonn map[string]interface{}
-	err := json.Unmarshal([]byte(req), &bsonn)
+	if siswa.NoInduk != "" {
+		if user.LoginType != 4 {
+			siswa.NoInduk = ""
+			return ErrorReturn(w, "Tidak Boleh Mengedit Data Ini", http.StatusForbidden)
+		}
+	}
+
+	if siswa.EmailOrtu != "" {
+		if user.LoginType != 4 {
+			siswa.EmailOrtu = ""
+			return ErrorReturn(w, "Tidak Boleh Mengedit Data Ini", http.StatusForbidden)
+		}
+	}
+
+	if siswa.IdKelas != "" {
+		if user.LoginType != 4 {
+			siswa.IdKelas = ""
+			return ErrorReturn(w, "Tidak Boleh Mengedit Data Ini", http.StatusForbidden)
+		}
+	}
+
+	err = json.Unmarshal(jsonsiswa, &bsonn)
 	if err != nil {
 		return ErrorReturn(w, "Tidak Ada Edit Request", http.StatusBadRequest)
 	}
-	//fmt.Println(sebelumEdit.Username)
-	//fmt.Println(bsonn)
-
-	c := s.DB("studenthack").C("students")
 
 	err = c.Update(bson.M{"_id": bson.ObjectIdHex(messhex)}, bson.M{"$set": bsonn})
 	if err != nil {
@@ -171,23 +191,12 @@ func SiswaController(urle string, w http.ResponseWriter, r *http.Request) string
 	if len(pathe) >= 2 {
 		if pathe[0] == "edit" {
 			return EditSiswa(ses, w, r, pathe[1])
+		} else if pathe[1] == "profil" {
+			return GetProfile(ses, w, r)
 		} else if pathe[1] == "" {
-			return GetSiswa(ses, w, r, pathe[1])
+			return GetProfileOther(ses, w, r, pathe[1])
 		}
 	}
-
-	// if pathe[0] == "login" {
-	// 	return LoginUser(ses, w, r)
-	// } else if pathe[0] == "registrasi" {
-	// 	return RegistrasiUser(ses, w, r)
-	// } else if pathe[0] == "edit" {
-	// 	return EditUser(ses, w, r, pathe[1])
-	// }
-
-	// if len(pathe) >= 2 {
-	// 	if pathe[1] != "" {
-	// 		return GetUser(ses, w, r, pathe[1])
-	// 	}
-	// }
+	
 	return ErrorReturn(w, "Path Tidak Ditemukan", http.StatusNotFound)
 }

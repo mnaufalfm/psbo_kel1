@@ -78,7 +78,7 @@ func LoginUser(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 
 	stat, msg := auth.CreateSession(ses, hex.EncodeToString([]byte(log.Id)))
 	if !stat {
-		return ErrorReturn(w, "Login Gagal", http.StatusForbidden)
+		return ErrorReturn(w, "Login Gagal", http.StatusBadRequest)
 	}
 
 	stat, role := konst.GetRoleString(log.LoginType)

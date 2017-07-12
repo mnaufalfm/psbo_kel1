@@ -115,6 +115,38 @@ func (u UserHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+	var id []interface{}
+	// var idd struct {
+	// 	Id string `json:"_id"`
+	// }
+
+	ses, err := mgo.Dial("localhost:27017")
+	if err != nil {
+		panic(err)
+	}
+
+	defer ses.Close()
+	ses.SetMode(mgo.Monotonic, true)
+
+	c := ses.DB("coba").C("cobas")
+	_ = c.Find(bson.M{}).Select(bson.M{"_id": 1}).All(&id)
+	for i := 0; i < len(id); i++ {
+		a := id[i].(bson.M)
+		jsonn, _ := json.Marshal(a)
+		fmt.Println(string(jsonn))
+		jsonn = jsonn[8 : len(jsonn)-2]
+		fmt.Println(string(jsonn))
+	}
+	// _ = json.Unmarshal(jsonn, idd)
+	// fmt.Println(idd)
+
+	// pengg.Username = "Hai"
+	// fmt.Printf("+%v\n", pengg)
+
+	// jsonn := `{"post":"hahaha", "posok":"hehehe"}`
+
+	// _ = json.Unmarshal([]byte(jsonn), &bsonn)
+	// fmt.Println(bsonn["post"])
 	//var berisik Berisik
 
 	// a := time.Now()
@@ -283,6 +315,6 @@ func main() {
 	//err = json.Unmarshal([]byte(s), &bsonn)
 	//fmt.Println(bsonn)
 
-	const lettersNumbers = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	fmt.Println(string(lettersNumbers[0]))
+	// const lettersNumbers = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	// fmt.Println(string(lettersNumbers[0])
 }

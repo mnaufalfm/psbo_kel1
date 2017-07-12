@@ -12,15 +12,26 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
+/*
+LoggedIn dipengaruhi oleh LastActive. Jika LastActive > 2 jam, LoggedIn sama dengan False.
+LastActive memengaruhi ExpiredTime. Jika suatu session sudah expired namun LastActive <= 2 jam, ExpiredTime diubah
+*/
 type Client struct {
 	IdUser      string
 	LogId       string
 	LoggedIn    bool
+	LastActive  int64
 	ExpiredTime int64
 }
 
 var SessionStore map[string]Client
 var StorageMutex sync.RWMutex
+
+// func (c *Client) LogStatus() {
+// 	dur,_ := time.ParseDuration("2h")
+// 	TimeActive := now.Add(dur).Unix()
+// 	if 
+// }
 
 //return true jika token valid, return false jika token invalid
 func CheckSession(s *mgo.Session, token string, id string) (bool, string) {
@@ -116,3 +127,6 @@ func DeleteSession(s *mgo.Session, id string) (bool, string) {
 	}
 	return false, "Session Gagal Dihapus"
 }
+
+//Fungsi untuk mengembalikan data session jika server mengalami shutdown
+//Session di-backup di database

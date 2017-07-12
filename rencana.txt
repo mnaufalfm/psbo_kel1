@@ -1,14 +1,22 @@
-HAL PENTING:
-1. Pengecekan Header kosong belum dilakukan!!! BAHAYA!!
+Yang LAGI dikerjain:
+1. Perbaikan post.go
 
-Session ada rencana disimpan ke database
+Yang BELUM dikerjain:
+1. Session ada rencana disimpan ke database (BELUM)
+2. Editing password harus dibenerin (BELUM) --> buat func ChangePassword() di guru.go, siswa.go, dan ortu.go
+3. Mengatur LastActive dan LoggedIn di session.go (BELUM)
+4. Default return pada router.go jika path tidak ditemukan (BELUM)
+5. Akses user dijadikan satu pada user.go --> linknya:9000/user/id. Baru dilarikan ke guru.go/siswa.go/ortu.go (BELUM)
 
-Setelah login --> kirim token (jwt), role, dan session
+Yang SUDAH dikerjain dan BELUM work:
+1. Guru tidak boleh mengedit Id, NIP, MataPelajaran, IdKelas (BELUM DICOBA)
+2. Siswa tidak boleh mengedit Id, NoInduk, EmailOrtu, IdKelas (BELUM DICOBA)
 
-token   --> Header["Auth"]
-session --> Header["Session"]
+Yang SUDAH dikerjain dan SUDAH work:
+1. Setelah login --> kirim token (jwt), role, dan session (SUDAH)
 
-
-func GetGuru
-Yang boleh get guru lengkap --> yang punya session yang sesuai (CheckSession) dan token yang valid
-Jadi dicek dulu kevalidan sebuah token baru dicek kevalidan sessionnya
+-------------------------------------------------------------------------------
+                          PENJELASAN TAMBAHAN
+-------------------------------------------------------------------------------
+func EditGuru
+Untuk editing mata pelajaran hanya dapat dilakukan oleh SR --> cek role yang edit

@@ -1,6 +1,6 @@
 package comment
 
-var Comment struct {
+type Comment struct {
 	Id         string `json:"id,omitempty" bson:"_id,omitempty"`
 	IdPembuat  string `json:"idpembuat,omitempty" bson:"idpembuat,omitempty"`
 	IsiComment string `json:"isicomment,omitempty" bson:"isicomment,omitempty"`
