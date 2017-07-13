@@ -114,11 +114,31 @@ func (u UserHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	//res.Write([]byte(`{"code":400, "error":"Hahaha iseng aja"}`))
 }
 
+type Haha struct {
+	Id   bson.ObjectId `json:"id,omitempty" bson:"_id,omitempty"`
+	Nama string        `json:"nama,omitempty" bson:"nama,omitempty"`
+	Data string        `json:"data,omitempty" bson:"data,omitempty"`
+}
+
 func main() {
-	var id []interface{}
-	// var idd struct {
-	// 	Id string `json:"_id"`
+	// var id []interface{}
+	// // var idd struct {
+	// // 	Id string `json:"_id"`
+	// // }
+
+	// a := time.Now()
+	// dur, _ := time.ParseDuration("2h")
+	// TimeActive := a.Add(dur).Unix()
+	// fmt.Println(a.Unix())
+	// fmt.Println(TimeActive)
+	// fmt.Println(TimeActive - a.Unix())
+
+	// err := os.Mkdir("files/ganteng", os.ModeDir)
+	// if os.IsExist(err) {
+	// 	fmt.Println("Udah ada cuk!")
 	// }
+
+	var haha Haha
 
 	ses, err := mgo.Dial("localhost:27017")
 	if err != nil {
@@ -129,7 +149,14 @@ func main() {
 	ses.SetMode(mgo.Monotonic, true)
 
 	c := ses.DB("coba").C("cobas")
-	_ = c.Find()
+
+	haha.Id = bson.ObjectIdHex(bson.NewObjectId().Hex())
+	haha.Nama = "Rizki Juljul"
+	haha.Data = "Puja puja"
+	_ = c.Insert(haha)
+	// _ = c.Find()
+	// a, _ := hex.DecodeString("5962e32a319cff127eebd300")
+	// fmt.Printf("%x", a)
 	// _ = c.Find(bson.M{}).Select(bson.M{"_id": 1}).All(&id)
 	// for i := 0; i < len(id); i++ {
 	// 	a := id[i].(bson.M)

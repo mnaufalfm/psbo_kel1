@@ -8,7 +8,7 @@ import (
 
 	"sync"
 
-	konst "../const"
+	"../const"
 	"gopkg.in/mgo.v2"
 )
 

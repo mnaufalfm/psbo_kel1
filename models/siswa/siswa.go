@@ -15,18 +15,18 @@ import (
 )
 
 type Siswa struct {
-	Id         string `json:"id,omitempty" bson:"_id,omitempty"`
-	NoInduk    string `json:"noinduk,omitempty" bson:"noinduk,omitempty"`
-	Password   string `json:"password,omitempty" bson:"password,omitempty"`
-	FotoProfil string `json:"fotoprofil,omitempty" bson:"fotoprofil,omitempty"` //simpan alamatnya saja
-	Nama       string `json:"nama,omitempty" bson:"nama,omitempty"`
-	TglLahir   string `json:"tgllahir,omitempty" bson:"tgllahir,omitempty"`
-	Email      string `json:"email,omitempty" bson:"email,omitempty"`
-	EmailOrtu  string `json:"emailortu,omitempty" bson:"emailortu,omitempty"`
-	Gender     string `json:"gender,omitempty" bson:"gender,omitempty"`
-	NoHp       string `json:"nohp,omitempty" bson:"nohp,omitempty"`
-	Alamat     string `json:"alamat,omitempty" bson:"alamat,omitempty"`
-	IdKelas    string `json:"idkelas,omitempty" bson:"idkelas,omitempty"`
+	Id         string   `json:"id,omitempty" bson:"_id,omitempty"`
+	NoInduk    string   `json:"noinduk,omitempty" bson:"noinduk,omitempty"`
+	Password   string   `json:"password,omitempty" bson:"password,omitempty"`
+	FotoProfil string   `json:"fotoprofil,omitempty" bson:"fotoprofil,omitempty"` //simpan alamatnya saja
+	Nama       string   `json:"nama,omitempty" bson:"nama,omitempty"`
+	TglLahir   string   `json:"tgllahir,omitempty" bson:"tgllahir,omitempty"`
+	Email      string   `json:"email,omitempty" bson:"email,omitempty"`
+	EmailOrtu  string   `json:"emailortu,omitempty" bson:"emailortu,omitempty"`
+	Gender     string   `json:"gender,omitempty" bson:"gender,omitempty"`
+	NoHp       string   `json:"nohp,omitempty" bson:"nohp,omitempty"`
+	Alamat     string   `json:"alamat,omitempty" bson:"alamat,omitempty"`
+	IdKelas    []string `json:"idkelas,omitempty" bson:"idkelas,omitempty"`
 }
 
 /*Standar json pengembalian jika mengalami error*/
@@ -76,7 +76,7 @@ func GetProfile(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 }
 
 //Digunakan untuk mengakses profil Siswa yang lain
-//Cara menggunakan: http://linknya.com:9000/siswa/nim/
+//Cara menggunakan: http://linknya.com:9000/siswa/id/
 func GetProfileOther(s *mgo.Session, w http.ResponseWriter, r *http.Request, path string) string {
 	var siswa Siswa
 
@@ -85,7 +85,7 @@ func GetProfileOther(s *mgo.Session, w http.ResponseWriter, r *http.Request, pat
 
 	c := ses.DB(konst.DBName).C(konst.DBSiswa)
 
-	err := c.Find(bson.M{"nip": path}).Select(bson.M{"_id": 0, "password": 0, "email": 0, "emailortu": 0, "tgllahir": 0, "nohp": 0, "alamat": 0, "matapelajaran": 0}).One(&siswa)
+	err := c.Find(bson.M{"_id": path}).Select(bson.M{"_id": 0, "password": 0, "email": 0, "emailortu": 0, "tgllahir": 0, "nohp": 0, "alamat": 0, "matapelajaran": 0}).One(&siswa)
 	if err != nil {
 		return ErrorReturn(w, "User Tidak Ditemukan", http.StatusBadRequest)
 	}
@@ -126,7 +126,7 @@ func EditSiswa(s *mgo.Session, w http.ResponseWriter, r *http.Request, path stri
 	messhex := auth.Base64ToString(tokenSplit[1])
 	// messhex := hex.EncodeToString([]byte(mess))
 
-	err = c.Find(bson.M{"_id": bson.ObjectId(messhex)}).One(&user)
+	err = c.Find(bson.M{"_id": bson.ObjectIdHex(messhex)}).One(&user)
 	if err != nil {
 		return ErrorReturn(w, "User Tidak Ditemukan", http.StatusBadRequest)
 	}
@@ -197,6 +197,6 @@ func SiswaController(urle string, w http.ResponseWriter, r *http.Request) string
 			return GetProfileOther(ses, w, r, pathe[1])
 		}
 	}
-	
+
 	return ErrorReturn(w, "Path Tidak Ditemukan", http.StatusNotFound)
 }

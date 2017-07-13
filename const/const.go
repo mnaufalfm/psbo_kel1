@@ -15,6 +15,9 @@ const DBUser = "users"
 //Nama koleksi Post pada database
 const DBPost = "posts"
 
+//Nama koleksi File pada database
+const DBFile = "files"
+
 //Nama dari database
 const DBName = "studenthack"
 

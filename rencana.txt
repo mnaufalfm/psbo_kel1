@@ -6,7 +6,8 @@ Yang BELUM dikerjain:
 2. Editing password harus dibenerin (BELUM) --> buat func ChangePassword() di guru.go, siswa.go, dan ortu.go
 3. Mengatur LastActive dan LoggedIn di session.go (BELUM)
 4. Default return pada router.go jika path tidak ditemukan (BELUM)
-5. Akses user dijadikan satu pada user.go --> linknya:9000/user/id. Baru dilarikan ke guru.go/siswa.go/ortu.go (BELUM)
+5. Mengatur json siswa pada ortu.go (terdapat data Nama dan link profil siswa) (BELUM)
+5. Mengatur json ortu pada siswa.go (terdapat data Nama dan link profil ortu) (BELUM)
 
 Yang SUDAH dikerjain dan BELUM work:
 1. Guru tidak boleh mengedit Id, NIP, MataPelajaran, IdKelas (BELUM DICOBA)
@@ -14,6 +15,7 @@ Yang SUDAH dikerjain dan BELUM work:
 
 Yang SUDAH dikerjain dan SUDAH work:
 1. Setelah login --> kirim token (jwt), role, dan session (SUDAH)
+2. Yang pake bson.ObjectId() di dalam kurungnya di hex.DecodeString("string hexnya") (SUDAH) --> seharusnya bson.ObjectIdHex() wkwk
 
 -------------------------------------------------------------------------------
                           PENJELASAN TAMBAHAN

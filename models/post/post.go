@@ -125,7 +125,7 @@ func GetOnePost(s *mgo.Session, w http.ResponseWriter, r *http.Request, path str
 	//Menentukan isi dari returnPost["profilpemilik"]
 	var user user.Pengguna
 	d := ses.DB(konst.DBName).C(konst.DBUser)
-	err := d.Find(bson.M{"_id": bson.ObjectId(post.IdPengirim)}).One(&user)
+	err = d.Find(bson.M{"_id": bson.ObjectId(post.IdPengirim)}).One(&user)
 	if err != nil {
 		return ErrorReturn(w, "Akun Pemilik Tidak Ditemukan", http.StatusBadRequest)
 	}
@@ -141,14 +141,16 @@ func GetOnePost(s *mgo.Session, w http.ResponseWriter, r *http.Request, path str
 	}
 
 	//Mengurusi komentar
-	returnPost["komen"] = []string{}
+	komens := []string{}
+	// returnPost["komen"] = []string{}
 	for i := 0; i < len(post.Comment); i++ {
 		stat, msg := comment.GetComment(ses, w, r, post.Comment[i])
 		if !stat {
 			return ErrorReturn(w, msg, http.StatusBadRequest)
 		}
-		returnPost["komen"] = append(returnPost["komen"], msg)
+		komens = append(komens, msg)
 	}
+	returnPost["komen"] = komens
 
 	w.WriteHeader(http.StatusOK)
 	postJson, _ := json.Marshal(returnPost)
@@ -196,6 +198,43 @@ func GetAllPost(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 	return string(postJson)
 }
 
+//Digunakan untuk meng-like post tertentu
+//Cara menggunakan: http://linknya:9000/like/idpost/
+func LikePost(s *mgo.Session, w http.ResponseWriter, r *http.Request, path string) string {
+	var post Post
+	bsonn := make(map[string]interface{})
+
+	ses := s.Copy()
+	defer s.Close()
+
+	token := r.Header.Get(konst.HeaderToken)
+	sess := r.Header.Get(konst.HeaderSession)
+	tokenSplit := strings.Split(token, ".")
+
+	if stat, msg := auth.CheckToken(token); !stat {
+		return ErrorReturn(w, msg, http.StatusBadRequest)
+	}
+
+	if stat, msg := auth.CheckSession(ses, sess, auth.Base64ToString(tokenSplit[1])); !stat {
+		return ErrorReturn(w, msg, http.StatusBadRequest)
+	}
+
+	c := ses.DB(konst.DBName).C(konst.DBPost)
+
+	err := c.Find(bson.M{"_id": bson.ObjectIdHex(path)}).One(&post)
+	if err != nil {
+		return ErrorReturn(w, "Post Tidak Ditemukan", http.StatusBadRequest)
+	}
+
+	bsonn["jumlahlike"] = post.JumlahLike + 1
+	err = c.Update(bson.M{"_id": bson.ObjectIdHex(path)}, bson.M{"$set": bsonn})
+	if err != nil {
+		return ErrorReturn(w, "Like Post Gagal", http.StatusBadRequest)
+	}
+
+	return SuccessReturn(w, "Like Post Berhasil", http.StatusOK)
+}
+
 func PostController(urle string, w http.ResponseWriter, r *http.Request) string {
 	urle = urle[1:]
 	pathe := strings.Split(urle, "/")
@@ -210,7 +249,9 @@ func PostController(urle string, w http.ResponseWriter, r *http.Request) string 
 	//IndexCreating(ses)
 
 	if len(pathe) >= 2 {
-		if pathe[1] == "create" {
+		if pathe[0] == "like" && pathe[1] != "" {
+			return LikePost(ses, w, r, pathe[1])
+		} else if pathe[1] == "create" {
 			return CreatePost(ses, w, r)
 		} else if pathe[2] == "" {
 			return GetOnePost(ses, w, r, pathe[2])

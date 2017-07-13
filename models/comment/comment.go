@@ -10,7 +10,7 @@ import (
 
 	"../../auth"
 	"../../const"
-	"../post"
+
 	"../user"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -21,6 +21,16 @@ type Comment struct {
 	IdPembuat  string `json:"idpembuat,omitempty" bson:"idpembuat,omitempty"`
 	IsiComment string `json:"isicomment,omitempty" bson:"isicomment,omitempty"`
 	TglComment int64  `json:"tglcomment,omitempty" bson:"tglcomment,omitempty"`
+}
+
+type Post struct {
+	Id            string    `json:"id,omitempty" bson:"_id,omitempty"`
+	IdPengirim    string    `json:"idpengirim,omitempty" bson:"idpengirim,omitempty"`
+	IsiPost       string    `json:"isipost,omitempty" bson:"isipost,omitempty"`
+	TglPost       int64     `json:"tglpost,omitempty" bson:"tglpost,omitempty"` //simpan alamatnya saja
+	JumlahComment int       `json:"jumlahcomment" bson:"jumlahcomment"`
+	Comment       []Comment `json:"comment" bson:"comment,omitempty"`
+	JumlahLike    int       `json:"jumlahlike" bson:"jumlahlike"`
 }
 
 /*Standar json pengembalian jika mengalami error*/
@@ -40,9 +50,10 @@ func SuccessReturn(w http.ResponseWriter, pesan string, code int) string {
 //Format pengiriman: {"komen": "isikomennya"}
 func CreateComment(s *mgo.Session, w http.ResponseWriter, r *http.Request, id string) string {
 	var komen Comment
-	var komenPost []Comment
-	var post post.Post
-	komennSend, bsonn := make(map[string]interface{})
+	// var komenPost []Comment
+	var post Post
+	komennSend := make(map[string]interface{})
+	bsonn := make(map[string]interface{})
 
 	ses := s.Copy()
 	defer s.Close()
@@ -71,14 +82,14 @@ func CreateComment(s *mgo.Session, w http.ResponseWriter, r *http.Request, id st
 	komen.IsiComment = komennSend["komen"].(string)
 	komen.TglComment = time.Now().Unix()
 
-	jsonKomen, _ := json.Marshal(komen)
+	// jsonKomen, _ := json.Marshal(komen)
 
 	d := ses.DB(konst.DBName).C(konst.DBPost)
 	err = d.Find(bson.M{"_id": bson.ObjectIdHex(id)}).One(&post)
 	if err != nil {
 		return ErrorReturn(w, "Post Tidak Ditemukan", http.StatusBadRequest)
 	}
-	post.Comment = append(post.Comment, jsonKomen)
+	post.Comment = append(post.Comment, komen)
 
 	jsonpost, _ := json.Marshal(post)
 	err = json.Unmarshal(jsonpost, &bsonn)
@@ -142,5 +153,26 @@ func GetComment(s *mgo.Session, w http.ResponseWriter, r *http.Request, komen Co
 
 	w.WriteHeader(http.StatusOK)
 	komenJson, _ := json.Marshal(returnComment)
-	return string(komenJson)
+	return true, string(komenJson)
+}
+
+func CommentController(urle string, w http.ResponseWriter, r *http.Request) string {
+	urle = urle[1:]
+	pathe := strings.Split(urle, "/")
+	fmt.Println(pathe[0] + " " + pathe[1])
+
+	ses, err := mgo.Dial("localhost:27017")
+	if err != nil {
+		panic(err)
+	}
+	defer ses.Close()
+	ses.SetMode(mgo.Monotonic, true)
+	//IndexCreating(ses)
+
+	if len(pathe) >= 2 {
+		if pathe[1] == "" {
+			return CreateComment(ses, w, r, pathe[1])
+		}
+	}
+	return ErrorReturn(w, "Path Tidak Ditemukan", http.StatusNotFound)
 }

@@ -90,6 +90,7 @@ func GetProfileOther(s *mgo.Session, w http.ResponseWriter, r *http.Request, pat
 	defer ses.Close()
 
 	c := ses.DB(konst.DBName).C(konst.DBGuru)
+	// paths, _ = hex.DecodeString(path)
 
 	err := c.Find(bson.M{"_id": bson.ObjectIdHex(path)}).Select(bson.M{"_id": 0, "password": 0, "email": 0, "tgllahir": 0, "nohp": 0, "alamat": 0, "matapelajaran": 0}).One(&guru)
 	if err != nil {
@@ -111,12 +112,13 @@ func EditGuru(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 	token := r.Header.Get(konst.HeaderToken)
 	sesi := r.Header.Get(konst.HeaderSession)
 	tokenSplit := strings.Split(token, ".")
+	messhex := auth.Base64ToString(tokenSplit[1])
 
 	if stat, msg := auth.CheckToken(token); !stat {
 		return ErrorReturn(w, msg, http.StatusForbidden)
 	}
 
-	if stat, msg := auth.CheckSession(s, sesi, auth.Base64ToString(tokenSplit[1])); !stat {
+	if stat, msg := auth.CheckSession(s, sesi, messhex); !stat {
 		return ErrorReturn(w, msg, http.StatusBadRequest)
 	}
 
@@ -128,13 +130,15 @@ func EditGuru(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 	if err != nil {
 		return ErrorReturn(w, "Format Request Salah", http.StatusBadRequest)
 	}
-
-	messhex := auth.Base64ToString(tokenSplit[1])
 	// messhex := hex.EncodeToString([]byte(mess))
 
-	fmt.Println(guru.MataPelajaran)
+	// fmt.Println(guru.MataPelajaran)
 
-	err = c.Find(bson.M{"_id": bson.ObjectId(messhex)}).One(&user)
+	// hexx, _ := hex.DecodeString(messhex)
+	fmt.Println(messhex)
+
+	d := ses.DB(konst.DBName).C(konst.DBUser)
+	err = d.Find(bson.M{"_id": bson.ObjectIdHex(messhex)}).One(&user)
 	if err != nil {
 		return ErrorReturn(w, "User Tidak Ditemukan", http.StatusBadRequest)
 	}
@@ -143,28 +147,28 @@ func EditGuru(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 	if guru.Id != "" {
 		if user.LoginType != 4 {
 			guru.Id = ""
-			return ErrorReturn(w, "Tidak Boleh Mengedit Data Ini", http.StatusForbidden)
+			return ErrorReturn(w, "Tidak Boleh Mengedit ID", http.StatusForbidden)
 		}
 	}
 
 	if guru.NIP != "" {
 		if user.LoginType != 4 {
 			guru.NIP = ""
-			return ErrorReturn(w, "Tidak Boleh Mengedit Data Ini", http.StatusForbidden)
+			return ErrorReturn(w, "Tidak Boleh Mengedit NIP", http.StatusForbidden)
 		}
 	}
 
 	if guru.IdKelas != "" {
 		if user.LoginType != 4 {
 			guru.IdKelas = ""
-			return ErrorReturn(w, "Tidak Boleh Mengedit Data Ini", http.StatusForbidden)
+			return ErrorReturn(w, "Tidak Boleh Mengedit Data Wali Kelas", http.StatusForbidden)
 		}
 	}
 
 	if len(guru.MataPelajaran) > 0 {
 		if user.LoginType != 4 {
 			guru.MataPelajaran = []Pelajaran{}
-			return ErrorReturn(w, "Tidak Boleh Mengedit Data Ini", http.StatusForbidden)
+			return ErrorReturn(w, "Tidak Boleh Mengedit Data Mata Pelajaran", http.StatusForbidden)
 		}
 	}
 
