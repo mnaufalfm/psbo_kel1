@@ -73,6 +73,7 @@ func main() {
 	mux.Handle("/comment/", komen)
 	mux.Handle("/ortu/", ortu)
 	mux.Handle("/upload/",file)
+	mux.Handle("/download/",file)
 	mux.HandleFunc("/", DefaultServe)
 
 	http.ListenAndServe(":9000", mux)

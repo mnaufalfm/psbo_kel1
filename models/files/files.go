@@ -108,7 +108,7 @@ func UploadFile(s *mgo.Session, w http.ResponseWriter, r *http.Request, pathe st
 
 	f, err := os.OpenFile(path+"/"+header.Filename, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
-		return ErrorReturn(w, "Gagal Upload File", http.StatusBadGateway)
+		return ErrorReturn(w, "File Tidak Ditemukan", http.StatusBadGateway)
 	}
 	defer f.Close()
 
@@ -124,6 +124,49 @@ func UploadFile(s *mgo.Session, w http.ResponseWriter, r *http.Request, pathe st
 	w.WriteHeader(http.StatusOK)
 	fileJson, _ := json.Marshal(returnFile)
 	return string(fileJson)
+}
+
+//Digunakan untuk download file
+//Cara menggunakan: http://linknya:9000/download/idfile/
+func DownloadFile(s *mgo.Session, w http.ResponseWriter, r *http.Request, pathe string) string {
+	var dataFile File
+
+	ses := s.Copy()
+	defer s.Close()
+
+	token := r.Header.Get(konst.HeaderToken)
+	sess := r.Header.Get(konst.HeaderSession)
+	tokenSplit := strings.Split(token, ".")
+	messhex := auth.Base64ToString(tokenSplit[1])
+
+	if stat, msg := auth.CheckToken(token); !stat {
+		return ErrorReturn(w, msg, http.StatusBadRequest)
+	}
+
+	if stat, msg := auth.CheckSession(ses, sess, messhex); !stat {
+		return ErrorReturn(w, msg, http.StatusBadRequest)
+	}
+
+	c := ses.DB(konst.DBName).C(konst.DBFile)
+
+	err := c.Find(bson.M{"_id": bson.ObjectIdHex(pathe)}).One(&dataFile)
+	if err != nil {
+		return ErrorReturn(w, "File Tidak Terdata", http.StatusBadRequest)
+	}
+
+	path := dataFile.AlamatFile + dataFile.NamaFile
+
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return ErrorReturn(w, "File Tidak Ditemukan", http.StatusBadRequest)
+	}
+
+	// w.WriteHeader(http.StatusOK)
+	// jsonn := fmt.Sprintf("{\"success\": %d, \"message\": \"%s\"}", http.StatusOK, "Anda Sedang Mengunduh File")
+	// w.Header().Set("Trailer", dataFile.NamaFile)
+	fmt.Println(w.Header())
+	http.ServeFile(w, r, path)
+	// return SuccessReturn(w, "Anda Sedang Mengunduh File", http.StatusOK)
+	return ""
 }
 
 func FileController(urle string, w http.ResponseWriter, r *http.Request) string {
@@ -142,6 +185,8 @@ func FileController(urle string, w http.ResponseWriter, r *http.Request) string 
 	if len(pathe) >= 2 {
 		if pathe[0] == "upload" && pathe[1] != "" {
 			return UploadFile(ses, w, r, pathe[1])
+		} else if pathe[0] == "download" && pathe[1] != "" {
+			return DownloadFile(ses, w, r, pathe[1])
 		}
 	}
 	return ErrorReturn(w, "Path Tidak Ditemukan", http.StatusNotFound)
