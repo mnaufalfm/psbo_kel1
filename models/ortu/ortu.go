@@ -11,6 +11,7 @@ import (
 
 	"../../auth"
 	"../../const"
+	"../siswa/call"
 	"../user"
 )
 
@@ -46,6 +47,7 @@ func SuccessReturn(w http.ResponseWriter, pesan string, code int) string {
 //Cara menggunakan: http://linknya.com:9000/ortu/profil/
 func GetProfile(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 	var ortu Ortu
+	returnOrtu := make(map[string]interface{})
 
 	ses := s.Copy()
 	defer ses.Close()
@@ -71,8 +73,25 @@ func GetProfile(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 		return ErrorReturn(w, "User Tidak Ditemukan", http.StatusBadRequest)
 	}
 
+	returnOrtu["datadiri"] = ortu.DataDiri
+	returnOrtu["jenisdatadiri"] = ortu.JenisDataDiri
+	returnOrtu["username"] = ortu.Username
+	returnOrtu["nama"] = ortu.Nama
+	returnOrtu["fotoprofil"] = ortu.FotoProfil
+	returnOrtu["tgllahir"] = ortu.TglLahir
+	returnOrtu["email"] = ortu.Email
+	returnOrtu["gender"] = ortu.Gender
+	returnOrtu["nohp"] = ortu.NoHp
+	returnOrtu["alamat"] = ortu.Alamat
+
+	stat, msg := call.GetSiswaByOrtu(ses, w, r, ortu.EmailSiswa)
+	if !stat {
+		return ErrorReturn(w, msg, http.StatusBadRequest)
+	}
+	returnOrtu["anak"] = msg
+
 	w.WriteHeader(http.StatusOK)
-	ortuJson, _ := json.Marshal(ortu)
+	ortuJson, _ := json.Marshal(returnOrtu)
 	return string(ortuJson)
 }
 
@@ -129,6 +148,13 @@ func EditOrtu(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 	err = c.Find(bson.M{"_id": bson.ObjectIdHex(messhex)}).One(&user)
 	if err != nil {
 		return ErrorReturn(w, "User Tidak Ditemukan", http.StatusBadRequest)
+	}
+
+	if ortu.Email != "" {
+		if user.LoginType != 4 {
+			ortu.Email = ""
+			return ErrorReturn(w, "Tidak Boleh Mengedit Data Email", http.StatusForbidden)
+		}
 	}
 
 	if len(ortu.EmailSiswa) > 0 {

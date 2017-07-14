@@ -11,6 +11,7 @@ import (
 
 	"../../auth"
 	"../../const"
+	"../ortu/call"
 	"../user"
 )
 
@@ -48,6 +49,8 @@ func SuccessReturn(w http.ResponseWriter, pesan string, code int) string {
 //Cara menggunakan: http://linknya:9000/siswa/profil/
 func GetProfile(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 	var siswa Siswa
+	var ortu Ortu
+	returnSiswa := make(map[string]interface{})
 	ses := s.Copy()
 	defer ses.Close()
 
@@ -70,8 +73,23 @@ func GetProfile(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 		return ErrorReturn(w, "User Tidak Ditemukan", http.StatusBadRequest)
 	}
 
+	returnSiswa["noinduk"] = siswa.NoInduk
+	returnSiswa["fotoprofil"] = siswa.FotoProfil
+	returnSiswa["nama"] = siswa.Nama
+	returnSiswa["tgllahir"] = siswa.TglLahir
+	returnSiswa["email"] = siswa.Email
+	returnSiswa["gender"] = siswa.Gender
+	returnSiswa["nohp"] = siswa.NoHp
+	returnSiswa["alamat"] = siswa.Alamat
+
+	stat, msg := call.GetOrtuBySiswa(ses, w, r, siswa.EmailOrtu)
+	if !stat {
+		return ErrorReturn(w, msg, http.StatusBadRequest)
+	}
+	returnSiswa["ortu"] = msg
+
 	w.WriteHeader(http.StatusOK)
-	siswaJson, _ := json.Marshal(siswa)
+	siswaJson, _ := json.Marshal(returnSiswa)
 	return string(siswaJson)
 }
 
