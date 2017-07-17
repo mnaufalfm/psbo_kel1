@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 
 	"net/http"
 
@@ -120,7 +121,51 @@ type Haha struct {
 	Data string        `json:"data,omitempty" bson:"data,omitempty"`
 }
 
+type CobaHandler int
+
+func (c CobaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	file, header, err := r.FormFile("materi")
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		io.WriteString(w, "Format Request Salah")
+		fmt.Println("Format Request Salah")
+	}
+	defer file.Close()
+
+	// gan := make(map[string]interface{})
+	r.ParseForm()
+	jsonn := r.PostFormValue("request")
+
+	fmt.Println(jsonn)
+	fmt.Println(header.Filename)
+
+	// jsonnn, _ := json.Marshal(jsonn)
+
+	// _ = json.Unmarshal(jsonnn, gan)
+
+	// fmt.Println(gan)
+
+	// formatfile := header.Header.Get("Content-Type")
+
+	// fmt.Println(formatfile)
+
+	// path := "files/materi/6666666"
+
+	// if _, err := os.Stat(path); os.IsNotExist(err) {
+	// 	os.Mkdir(path, os.ModeDir)
+	// }
+
+	// f, err := os.OpenFile(path+"/"+header.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+
+	// defer f.Close()
+
+	// _, err = io.Copy(f, file)
+}
+
 func main() {
+	var co CobaHandler
+
+	http.ListenAndServe(":9000", co)
 	// var id []interface{}
 	// // var idd struct {
 	// // 	Id string `json:"_id"`
@@ -138,22 +183,24 @@ func main() {
 	// 	fmt.Println("Udah ada cuk!")
 	// }
 
-	var haha Haha
+	// var haha Haha
 
-	ses, err := mgo.Dial("localhost:27017")
-	if err != nil {
-		panic(err)
-	}
+	// ses, err := mgo.Dial("localhost:27017")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	defer ses.Close()
-	ses.SetMode(mgo.Monotonic, true)
+	// defer ses.Close()
+	// ses.SetMode(mgo.Monotonic, true)
 
-	c := ses.DB("coba").C("cobas")
+	// c := ses.DB("coba").C("cobas")
 
-	haha.Id = bson.ObjectIdHex(bson.NewObjectId().Hex())
-	haha.Nama = "Rizki Juljul"
-	haha.Data = "Puja puja"
-	_ = c.Insert(haha)
+	// haha.Id = bson.ObjectIdHex(bson.NewObjectId().Hex())
+	// haha.Nama = "Rizki Juljul"
+	// haha.Data = "Puja puja"
+	// _ = c.Insert(haha)
+
+	// fmt.Println(time.Now().Unix())
 	// _ = c.Find()
 	// a, _ := hex.DecodeString("5962e32a319cff127eebd300")
 	// fmt.Printf("%x", a)

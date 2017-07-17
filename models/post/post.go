@@ -24,6 +24,7 @@ import (
 type Post struct {
 	Id            string            `json:"id,omitempty" bson:"_id,omitempty"`
 	IdPengirim    string            `json:"idpengirim,omitempty" bson:"idpengirim,omitempty"`
+	IsiGambar     string            `json:"isigambar,omitempty" bson:"isigambar,omitempty"`
 	IsiPost       string            `json:"isipost,omitempty" bson:"isipost,omitempty"`
 	TglPost       int64             `json:"tglpost,omitempty" bson:"tglpost,omitempty"` //simpan alamatnya saja
 	JumlahComment int               `json:"jumlahcomment" bson:"jumlahcomment"`

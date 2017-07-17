@@ -30,7 +30,7 @@ var StorageMutex sync.RWMutex
 // func (c *Client) LogStatus() {
 // 	dur,_ := time.ParseDuration("2h")
 // 	TimeActive := now.Add(dur).Unix()
-// 	if 
+// 	if
 // }
 
 //return true jika token valid, return false jika token invalid
@@ -96,10 +96,10 @@ func CreateSession(s *mgo.Session, id string) (bool, string) {
 		sessionid := EncryptTripleDES(randid, "12345678")
 		klien.LogId = randid
 
-		StorageMutex.Lock()
-		// fmt.Println("CreateSession Lock")
-		SessionStore[id] = klien
-		StorageMutex.Unlock()
+		// StorageMutex.Lock()
+		// // fmt.Println("CreateSession Lock")
+		// SessionStore[id] = klien
+		// StorageMutex.Unlock()
 		// fmt.Println("CreateSession Unlock")
 
 		fmt.Println(SessionStore)

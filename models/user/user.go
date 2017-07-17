@@ -28,7 +28,7 @@ func ErrorReturn(w http.ResponseWriter, pesan string, code int) string {
 	w.WriteHeader(code)
 	//fmt.Fprintf(w, "{error: %i, message: %q}", code, pesan)
 	//return "{error: " + strconv.Itoa(code) + ", message: " + pesan + "}"
-	return fmt.Sprintf("{\"error\": %d, \"message\": \"%s\"}", code, pesan)
+	return fmt.Sprintf("{\"status\": %d, \"message\": \"%s\"}", code, pesan)
 }
 
 /*func SuccessReturn(w http.ResponseWriter, json []byte, pesan string, code int) string {
@@ -40,7 +40,7 @@ func ErrorReturn(w http.ResponseWriter, pesan string, code int) string {
 func SuccessReturn(w http.ResponseWriter, pesan string, code int) string {
 	w.WriteHeader(code)
 	//return `{"success": " + strconv.Itoa(code) + ", message: " + pesan + "}`
-	return fmt.Sprintf("{\"success\": %d, \"message\": \"%s\"}", code, pesan)
+	return fmt.Sprintf("{\"statuss\": %d, \"message\": \"%s\"}", code, pesan)
 }
 
 //Fungsi untuk login
@@ -54,7 +54,7 @@ func LoginUser(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 
 	err := json.NewDecoder(r.Body).Decode(&log)
 	if err != nil {
-		//fmt.Println("Cari data")
+		fmt.Println("Cari data")
 		return ErrorReturn(w, "Login Gagal", http.StatusBadRequest)
 	}
 
@@ -64,7 +64,7 @@ func LoginUser(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 
 	err = c.Find(bson.M{"username": log.Username}).One(&log)
 	if err != nil {
-		//fmt.Println("User Hilang")
+		fmt.Println("User Hilang")
 		return ErrorReturn(w, "Anda Belum Registrasi", http.StatusBadRequest)
 	}
 
@@ -78,16 +78,18 @@ func LoginUser(s *mgo.Session, w http.ResponseWriter, r *http.Request) string {
 
 	stat, msg := auth.CreateSession(ses, hex.EncodeToString([]byte(log.Id)))
 	if !stat {
+		fmt.Println("Session Entah Berantah")
 		return ErrorReturn(w, "Login Gagal", http.StatusBadRequest)
 	}
 
 	stat, role := konst.GetRoleString(log.LoginType)
 	if !stat {
+		fmt.Println("Role Gak Jelas")
 		return ErrorReturn(w, role, http.StatusBadRequest)
 	}
 
 	w.WriteHeader(http.StatusOK)
-	return fmt.Sprintf("{\"token\": \"%s\", \"role\": \"%s\", \"session\": \"%s\"}", auth.TokenMaker(log.Id, "studenthack"), role, msg)
+	return fmt.Sprintf("{\"status\": %d, \"token\": \"%s\", \"role\": \"%s\", \"session\": \"%s\"}", http.StatusOK, auth.TokenMaker(log.Id, "studenthack"), role, msg)
 
 	// if encryptPass == encryptPassLogin {
 	// 	w.WriteHeader(http.StatusOK)

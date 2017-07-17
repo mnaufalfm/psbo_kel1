@@ -4,16 +4,18 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/rs/cors"
+
 	"io"
 	"sync"
 
 	"./auth"
 	"./models/comment"
+	"./models/files"
 	"./models/guru"
 	"./models/ortu"
 	"./models/post"
 	"./models/user"
-	"./models/files"
 )
 
 type UserHandler int
@@ -72,9 +74,10 @@ func main() {
 	mux.Handle("/like/", post)
 	mux.Handle("/comment/", komen)
 	mux.Handle("/ortu/", ortu)
-	mux.Handle("/upload/",file)
-	mux.Handle("/download/",file)
+	mux.Handle("/upload/", file)
+	mux.Handle("/download/", file)
 	mux.HandleFunc("/", DefaultServe)
 
-	http.ListenAndServe(":9000", mux)
+	handler := cors.Default().Handler(mux)
+	http.ListenAndServe(":9000", handler)
 }
